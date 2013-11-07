@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - jruby-18mode
+  - jruby-19mode
+  - jruby-head
+jdk:
+  - openjdk6
+  - openjdk7
+  - oraclejdk7
+script: "ruby test/http_client_test.rb"
