@@ -6,12 +6,12 @@ require "minitest/pride"
 require "minitest/autorun"
 require "json"
 
-require_relative "../lib/http_client"
+require File.expand_path("../../lib/http_client", __FILE__)
 
 module Minitest
   class Test
     def self.test(name, &block)
-      define_method("test_#{name.gsub(" ", " ")}", &block)
+      define_method("test_#{name.gsub(" ", "_")}", &block)
     end
   end
 end

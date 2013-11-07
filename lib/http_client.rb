@@ -3,7 +3,7 @@
 require "uri"
 require "java"
 %w[httpcore-4.3 httpclient-4.3.1 httpmime-4.3.1 commons-logging-1.1.3].each do |jar|
-  require_relative "../vendor/#{jar}.jar"
+  require File.expand_path("../../vendor/#{jar}.jar", __FILE__)
 end
 
 class HttpClient
