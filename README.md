@@ -59,7 +59,7 @@ response = client.get("http://secretservice.com/users/123",
 ```ruby
 $client = HttpClient.new(
   :use_connection_pool => true,
-  :max_connections => 10,
+  :max_connections => 10
 )
 
 %[www.google.de www.yahoo.com www.altavista.com].each do |host|
@@ -77,6 +77,8 @@ This library covers just what I need. I wanted to have a thread safe HTTP client
 Before you start hacking away, [have a look at the issues](https://github.com/Overbryd/http_client/issues). There might be stuff that is already in the making. If so, there will be a published branch you can contribute to.
 
 Just create a fork and send me a pull request. I would be honored to look at your input.
+
+![Build Status](https://travis-ci.org/Overbryd/http_client.png)
 
 ## Legal
 
