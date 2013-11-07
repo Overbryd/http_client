@@ -77,3 +77,7 @@ This library covers just what I need. I wanted to have a thread safe HTTP client
 Before you start hacking away, [have a look at the issues](https://github.com/Overbryd/http_client/issues). There might be stuff that is already in the making. If so, there will be a published branch you can contribute to.
 
 Just create a fork and send me a pull request. I would be honored to look at your input.
+
+## Legal
+
+Copyright by Lukas Rieder, 2013, Licensed under the MIT License, see LICENSE
