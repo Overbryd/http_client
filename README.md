@@ -8,76 +8,66 @@ It currently implements all common HTTP verbs, connection pooling, retries and t
 #### A simple GET request
 
 ```ruby
+require "http_client"
 
-	require "http_client"
-	
-	client = HTTPClient.new
-	response = client.get("http://www.google.com/robots.txt")
-	
-	response.status
-	# => 200
-	
-	response.body
-	# =>
-	# User-agent: *
-	# ...
+client = HTTPClient.new
+response = client.get("http://www.google.com/robots.txt")
 
+response.status
+# => 200
+
+response.body
+# =>
+# User-agent: *
+# ...
 ```
 
 #### POST a form
 
 ```ruby
-
-	response = client.post("http://geocities.com/darrensden/guestbook",
-	  :form => {
-	    :name => "Joe Stub",
-	    :email => "joey@ymail.com",
-	    :comment => "Hey, I really like your site! Awesome stuff"
-	  }
-	)
-
+response = client.post("http://geocities.com/darrensden/guestbook",
+  :form => {
+    :name => "Joe Stub",
+    :email => "joey@ymail.com",
+    :comment => "Hey, I really like your site! Awesome stuff"
+  }
+)
 ```
 
 #### POST JSON data
 
 ```ruby
-
-	response = client.post("http://webtwoopointo.com/v1/api/guestbooks/123/comments",
-	  :json => {
-	    :name => "Jason",
-	    :email => "jaz0r@gmail.com",
-	    :comment => "Yo dawg, luv ur site!"
-	  }
-	)
-
+response = client.post("http://webtwoopointo.com/v1/api/guestbooks/123/comments",
+  :json => {
+    :name => "Jason",
+    :email => "jaz0r@gmail.com",
+    :comment => "Yo dawg, luv ur site!"
+  }
+)
 ```
 
 #### Provide request headers
 
 ```ruby
-
-	response = client.get("http://secretservice.com/users/123",
-	  :headers => { "X-Auth": "deadbeef23" }
-	)
-
+response = client.get("http://secretservice.com/users/123",
+  :headers => { "X-Auth": "deadbeef23" }
+)
 ```
 
 #### Using a connection pool
 
 ```ruby
+$client = HTTPClient.new(
+  :use_connection_pool => true,
+  :max_connections => 10,
+)
 
-	$client = HTTPClient.new(
-	  :use_connection_pool => true,
-	  :max_connections => ,
-	)
-	
-	%[www.google.de www.yahoo.com www.altavista.com].each do |host|
-	  Thread.new do
-	    response = $client.get("http://#{host}/robots.txt")
-	    puts response.body
-	  end
-	end
-
+%[www.google.de www.yahoo.com www.altavista.com].each do |host|
+  Thread.new do
+    response = $client.get("http://#{host}/robots.txt")
+    puts response.body
+  end
+end
 ```
 
 ## Contribute

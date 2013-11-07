@@ -30,7 +30,6 @@ class HttpClient
   import java.io.IOException
   import java.net.SocketTimeoutException
   import java.util.concurrent.TimeUnit
-  import java.util.concurrent.ConcurrentHashMap
 
   class Error < StandardError; end
   class Timeout < Error; end
@@ -180,6 +179,7 @@ private
 
   def create_request(method_class, uri, options)
     request = method_class.new(uri)
+    request.config = @request_config
     options = default_request_options.merge(options)
     options[:headers].each do |name, value|
       request.set_header(name.to_s.gsub("_", "-"), value)
