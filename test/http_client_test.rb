@@ -8,6 +8,8 @@ require "json"
 
 require File.expand_path("../../lib/http_client", __FILE__)
 
+def Hash(h); h; end
+
 module Minitest
   class Test
     def self.test(name, &block)
