@@ -1,10 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    json (1.8.1-java)
     minitest (5.0.8)
 
 PLATFORMS
   java
 
 DEPENDENCIES
+  json
   minitest

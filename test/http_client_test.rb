@@ -4,8 +4,8 @@ require "rubygems"
 require "bundler/setup"
 require "minitest/pride"
 require "minitest/autorun"
-
 require "json"
+
 require_relative "../lib/http_client"
 
 module Minitest
