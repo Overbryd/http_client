@@ -1,7 +1,7 @@
 # coding: utf-8
 
 require "rubygems"
-gem "minitest"
+require "bundler/setup"
 require "minitest/pride"
 require "minitest/autorun"
 
@@ -20,7 +20,7 @@ class HttpClientTest < Minitest::Test
   attr_reader :client
 
   def setup
-    @client = HttpClient.new
+    @client = HttpClient.new(:socket_timeout => 5000, :connect_timeout => 5000, :max_retries => 2)
   end
 
   test "GET request with params in uri" do
