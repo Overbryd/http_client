@@ -46,6 +46,11 @@ class HttpClientTest < Minitest::Test
     assert_nil response.json_body["headers"]["Content-Encoding"]
   end
 
+  test "GET request with chunked response" do
+    response = client.get("http://httpbin.org/stream/10")
+    assert_equal 10, response.body.split("\n").size
+  end
+
   test "POST request with string body" do
     response = client.post("http://httpbin.org/post", :body => "foo:bar|zig:zag")
     assert_equal "text/plain; charset=UTF-8", response.json_body["headers"]["Content-Type"]

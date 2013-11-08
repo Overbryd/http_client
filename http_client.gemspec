@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "http_client"
-  s.version = "0.5.0"
+  s.version = "0.5.1"
   s.date = "2013-11-07"
   s.summary = "HTTP client for JRuby"
   s.description = "This library wraps the Apache HTTPClient (4.3) in a simple fashion. The library is intended to be used in a multithreaded environment."

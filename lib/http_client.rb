@@ -59,7 +59,7 @@ class HttpClient
 
     def read_body(closeable_response)
       return "" unless entity = closeable_response.entity
-      return "" unless entity.content_length > 0
+      return "" unless entity.is_chunked? || entity.content_length > 0
       if content_encoding = entity.content_encoding
         entity = case content_encoding.value
           when "gzip", "x-gzip" then
