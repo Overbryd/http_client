@@ -1,6 +1,7 @@
 # coding: utf-8
 
 require "uri"
+require "base64"
 require "java"
 %w[httpcore-4.3 httpclient-4.3.1 httpmime-4.3.1 commons-logging-1.1.3].each do |jar|
   require File.expand_path("../../vendor/#{jar}.jar", __FILE__)
@@ -181,10 +182,17 @@ private
     request = method_class.new(uri)
     request.config = @request_config
     options = default_request_options.merge(options)
+    set_basic_auth(request, options[:basic_auth])
     options[:headers].each do |name, value|
       request.set_header(name.to_s.gsub("_", "-"), value)
     end if options[:headers]
     request
+  end
+
+  def set_basic_auth(request, basic_auth)
+    return unless basic_auth.is_a?(Hash)
+    credentials = "#{basic_auth[:user]}:#{basic_auth[:password]}"
+    request.set_header("Authorization", "Basic #{Base64.strict_encode64(credentials)}")
   end
 
   def create_entity(options)
