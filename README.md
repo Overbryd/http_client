@@ -78,7 +78,7 @@ Before you start hacking away, [have a look at the issues](https://github.com/Ov
 
 Just create a fork and send me a pull request. I would be honored to look at your input.
 
-![Build Status](https://travis-ci.org/Overbryd/http_client.png)
+[![Build Status](https://travis-ci.org/Overbryd/http_client.png)](https://travis-ci.org/Overbryd/http_client)
 
 ## Legal
 
