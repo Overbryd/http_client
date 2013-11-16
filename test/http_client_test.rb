@@ -58,6 +58,16 @@ class HttpClientTest < Minitest::Test
     assert_equal 200, response.status
   end
 
+  test "GET request with a redirect" do
+    response = client.get("http://httpbin.org/redirect/1")
+    assert_equal 302, response.status
+  end
+
+  test "GET request following redirects" do
+    response = client.get("http://httpbin.org/redirect/2", :max_redirects => 3)
+    assert_equal 200, response.status
+  end
+
   test "POST request with string body" do
     response = client.post("http://httpbin.org/post", :body => "foo:bar|zig:zag")
     assert_equal "text/plain; charset=UTF-8", response.json_body["headers"]["Content-Type"]
