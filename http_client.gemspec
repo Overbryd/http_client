@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.date = "2013-11-08"
   s.summary = "HTTP client for JRuby"
   s.description = "This library wraps the Apache HTTPClient (4.3) in a simple fashion. The library is intended to be used in a multithreaded environment."
-  s.platform = Gem::Platform::CURRENT
+  s.platform = "java"
   s.requirements << "JRuby"
   s.requirements << "Java, since this library wraps a Java library"
   s.authors = ["Lukas Rieder"]
