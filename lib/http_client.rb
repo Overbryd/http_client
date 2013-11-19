@@ -226,6 +226,7 @@ private
     connection_manager = PoolingHttpClientConnectionManager.new
     connection_manager.max_total = options[:max_connections]
     connection_manager.default_max_per_route = options[:max_connections_per_route] || options[:max_connections]
+    connection_manager
   end
 
 end
