@@ -6,6 +6,8 @@ require "java"
 %w[httpcore-4.3 httpclient-4.3.1 httpmime-4.3.1 commons-logging-1.1.3].each do |jar|
   require File.expand_path("../../vendor/#{jar}.jar", __FILE__)
 end
+require "http_client/response"
+require "http_client/connection_cleaner"
 
 class HttpClient
   import org.apache.http.impl.client.HttpClients
@@ -36,49 +38,15 @@ class HttpClient
   class Timeout < Error; end
   class IOError < Error; end
 
-  class Response
-    attr_reader :status, :body, :headers
-
-    def initialize(closeable_response)
-      @status = closeable_response.status_line.status_code
-      @headers = closeable_response.get_all_headers.inject({}) do |headers, header|
-        headers[header.name] = header.value
-        headers
-      end
-      @body = read_body(closeable_response)
-    end
-
-    def success?
-      @status >= 200 && @status <= 206
-    end
-
-    def json_body(options = {})
-      @json_body ||= JSON.parse(body, options)
-    end
-
-  private
-
-    def read_body(closeable_response)
-      return "" unless entity = closeable_response.entity
-      return "" unless entity.is_chunked? || entity.content_length > 0
-      if content_encoding = entity.content_encoding
-        entity = case content_encoding.value
-          when "gzip", "x-gzip" then
-            GzipDecompressingEntity.new(entity)
-          when "deflate" then
-            DeflateDecompressingEntity.new(entity)
-          else
-            entity
-        end
-      end
-      EntityUtils.to_string(entity, "UTF-8")
-    end
+  @lock = Mutex.new
+  def self.connection_cleaner
+    @lock.synchronize { @connection_cleaner ||= ConnectionCleaner.new }
   end
 
-  attr_reader :client, :max_retries, :response_class, :default_request_options
+  attr_reader :client, :config
 
-  def initialize(options = {})
-    options = {
+  def initialize(config = {})
+    @config = {
       :use_connection_pool => false,
       :max_connections => 20,
       :max_connections_per_route => nil,
@@ -87,14 +55,13 @@ class HttpClient
       :connection_request_timeout => 100,
       :connect_timeout => 1000,
       :socket_timeout => 2000,
+      :max_idle => 5,
+      :use_connection_cleaner => true,
       :default_request_options => {}
-    }.merge(options)
-    @request_config = create_request_config(options)
-    @connection_manager = create_connection_manager(options)
+    }.merge(config)
+    @request_config = create_request_config
+    @connection_manager = create_connection_manager
     @client = HttpClients.create_minimal(@connection_manager)
-    @max_retries = options[:max_retries]
-    @response_class = options[:response_class]
-    @default_request_options = options[:default_request_options]
   end
 
   def get(uri, options = {})
@@ -140,7 +107,7 @@ class HttpClient
   end
 
   def pool_stats
-    raise "#{self.class.name}#pool_stats is supported only when using a connection pool" unless @connection_manager.is_a?(PoolingHttpClientConnectionManager)
+    return unless @connection_manager.is_a?(PoolingHttpClientConnectionManager)
     total_stats = @connection_manager.total_stats
     Hash(
       :idle => total_stats.available,
@@ -150,7 +117,7 @@ class HttpClient
     )
   end
 
-  def cleanup_connections(max_idle = 5)
+  def cleanup_connections(max_idle = config[:max_idle])
     @connection_manager.close_idle_connections(max_idle, TimeUnit::SECONDS)
   end
 
@@ -161,10 +128,10 @@ class HttpClient
 private
 
   def execute(request)
-    retries = max_retries
+    retries = config[:max_retries]
     begin
       closeable_response = client.execute(request)
-      response_class.new(closeable_response)
+      config[:response_class].new(closeable_response)
     rescue ConnectTimeoutException, SocketTimeoutException => e
       retry if (retries -= 1) > 0
       raise Timeout, "#{e.message}"
@@ -181,7 +148,7 @@ private
   def create_request(method_class, uri, options)
     request = method_class.new(uri)
     request.config = @request_config
-    options = default_request_options.merge(options)
+    options = config[:default_request_options].merge(options)
     set_basic_auth(request, options[:basic_auth])
     options[:headers].each do |name, value|
       request.set_header(name.to_s.gsub("_", "-"), value)
@@ -209,23 +176,26 @@ private
     end
   end
 
-  def create_request_config(options)
-    config = RequestConfig.custom
-    config.set_stale_connection_check_enabled(true)
-    config.set_connection_request_timeout(options[:connection_request_timeout])
-    config.set_connect_timeout(options[:connect_timeout])
-    config.set_socket_timeout(options[:socket_timeout])
-    config.build
+  def create_request_config
+    request_config = RequestConfig.custom
+    request_config.set_stale_connection_check_enabled(true)
+    request_config.set_connection_request_timeout(config[:connection_request_timeout])
+    request_config.set_connect_timeout(config[:connect_timeout])
+    request_config.set_socket_timeout(config[:socket_timeout])
+    request_config.build
   end
 
-  def create_connection_manager(options)
-    options[:use_connection_pool] ? create_pooling_connection_manager(options) : BasicHttpClientConnectionManager.new
+  def create_connection_manager
+    config[:use_connection_pool] ? create_pooling_connection_manager : BasicHttpClientConnectionManager.new
   end
 
-  def create_pooling_connection_manager(options)
+  def create_pooling_connection_manager
     connection_manager = PoolingHttpClientConnectionManager.new
-    connection_manager.max_total = options[:max_connections]
-    connection_manager.default_max_per_route = options[:max_connections_per_route] || options[:max_connections]
+    connection_manager.max_total = config[:max_connections]
+    connection_manager.default_max_per_route = config[:max_connections_per_route] || config[:max_connections]
+    connection_manager.max_total = config[:max_connections]
+    connection_manager.default_max_per_route = config[:max_connections_per_route] || config[:max_connections]
+    self.class.connection_cleaner.register(self) if config[:use_connection_cleaner]
     connection_manager
   end
 

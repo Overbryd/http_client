@@ -6,7 +6,9 @@ require "minitest/pride"
 require "minitest/autorun"
 require "json"
 
-require File.expand_path("../../lib/http_client", __FILE__)
+# Rubygems would do this for us when loading the gem
+$LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
+require "http_client"
 
 def Hash(h); h; end
 
@@ -86,7 +88,7 @@ class HttpClientTest < Minitest::Test
 end
 
 # # Content-Type precedence
-# 
+#
 # client.post("http://httpbin.org/post",
 #   :headers => {
 #     :content_type => "application/xml"
