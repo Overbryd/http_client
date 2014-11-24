@@ -3,6 +3,8 @@
 This library wraps the Apache HttpClient (4.3) in a simple fashion.
 It currently implements all common HTTP verbs, connection pooling, retries and transparent gzip response handling. All common exceptions from Javaland are wrapped as Ruby exceptions. The library is intended to be used in a multithreaded environment.
 
+It is currently in use in some of my production environments, including one that frequently talks to Facebook. I could not find a single issue since 2013.
+
 ## Examples
 
 #### A simple GET request
@@ -40,8 +42,8 @@ response = client.post("http://geocities.com/darrensden/guestbook",
 response = client.post("http://webtwoopointo.com/v1/api/guestbooks/123/comments",
   :json => {
     :name => "Jason",
-    :email => "jaz0r@gmail.com",
-    :comment => "Yo dawg, luv ur site!"
+    :email => "jason@gmail.com",
+    :comment => "Your site is great!"
   }
 )
 ```
@@ -56,10 +58,13 @@ response = client.get("http://secretservice.com/users/123",
 
 #### Using a connection pool
 
+Rather than opening a new connection each and every time, you can pool connections to your target host. Using `:use_connection_pool => true` gives you fine grained control over the total number of connections and the number of connections your client will maintain to each route.
+
 ```ruby
 $client = HttpClient.new(
   :use_connection_pool => true,
-  :max_connections => 10
+  :max_connections => 3,
+  :max_connections_per_route => 1
 )
 
 %[www.google.de www.yahoo.com www.altavista.com].each do |host|
@@ -70,9 +75,15 @@ $client = HttpClient.new(
 end
 ```
 
+##### Connection pool cleanup
+
+**tl;dr This library does this by default.** 
+In case you do not want _one extra thread_ cleaning after all `HttpClient` instances that use connection pooling, you can set the option `:use_connection_cleaner => false` and call `HttpClient#cleanup_connections` manually.
+The background on this is, that you should actively expire your idle connections from the client side. Doing so will prevent you from ending up with too many `CLOSE-WAIT` connections. There are servers that never close the connection from their side, leaving the task up to the client.
+
 ## Contribute
 
-This library covers just what I need. I wanted to have a thread safe HTTP client that has a fixed connection pool with fine grained timeout configurations.
+This library covers just what I need. I wanted to have a thread safe HTTP client that supports a fixed connection pool with fine grained connection and timeout configurations.
 
 Before you start hacking away, [have a look at the issues](https://github.com/Overbryd/http_client/issues). There might be stuff that is already in the making. If so, there will be a published branch you can contribute to.
 
