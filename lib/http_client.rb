@@ -193,8 +193,6 @@ private
     connection_manager = PoolingHttpClientConnectionManager.new
     connection_manager.max_total = config[:max_connections]
     connection_manager.default_max_per_route = config[:max_connections_per_route] || config[:max_connections]
-    connection_manager.max_total = config[:max_connections]
-    connection_manager.default_max_per_route = config[:max_connections_per_route] || config[:max_connections]
     self.class.connection_cleaner.register(self) if config[:use_connection_cleaner]
     connection_manager
   end
